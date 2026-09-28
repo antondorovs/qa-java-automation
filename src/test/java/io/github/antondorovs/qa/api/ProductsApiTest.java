@@ -115,12 +115,42 @@ class ProductsApiTest {
     }
 
     @Test
+    void paginatesProductsWithinCategory() {
+        String category = "beauty";
+        ProductsResponse response = client.getProductsByCategory(category, 2, 1).then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+
+        assertAll(
+                () -> assertEquals(2, response.limit()),
+                () -> assertEquals(1, response.skip()),
+                () -> assertEquals(2, response.products().size()),
+                () -> assertTrue(response.total() >= response.skip() + response.limit())
+        );
+        for (Product product : response.products()) {
+            assertEquals(category, product.category(), "Category for product " + product.id());
+        }
+    }
+
+    @Test
     void returnsEmptyResultsForUnknownSearchTerm() {
         ProductsResponse response = client.searchProducts("qa-no-product-7a6d921e").then()
                 .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
 
         assertEquals(0, response.total());
         assertTrue(response.products().isEmpty());
+    }
+
+    @Test
+    void paginatesProductSearchResults() {
+        ProductsResponse response = client.searchProducts("phone", 3, 1).then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+
+        assertAll(
+                () -> assertEquals(3, response.limit()),
+                () -> assertEquals(1, response.skip()),
+                () -> assertEquals(3, response.products().size()),
+                () -> assertTrue(response.total() >= response.skip() + response.limit())
+        );
     }
 
     @Test
