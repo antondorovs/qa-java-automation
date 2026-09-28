@@ -42,6 +42,14 @@ public class ProductsClient {
                 .queryParam("q", query).get("/products/search");
     }
 
+    public Response searchProducts(String query, int limit, int skip) {
+        return given().spec(ApiSpecifications.request())
+                .queryParam("q", query)
+                .queryParam("limit", limit)
+                .queryParam("skip", skip)
+                .get("/products/search");
+    }
+
     public Response getProductsByCategory(String category) {
         return given().spec(ApiSpecifications.request()).get("/products/category/{category}", category);
     }

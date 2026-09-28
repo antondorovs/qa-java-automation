@@ -124,6 +124,19 @@ class ProductsApiTest {
     }
 
     @Test
+    void paginatesProductSearchResults() {
+        ProductsResponse response = client.searchProducts("phone", 3, 1).then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+
+        assertAll(
+                () -> assertEquals(3, response.limit()),
+                () -> assertEquals(1, response.skip()),
+                () -> assertEquals(3, response.products().size()),
+                () -> assertTrue(response.total() >= response.skip() + response.limit())
+        );
+    }
+
+    @Test
     void echoesCreatedProductWithoutPersistingIt() {
         ProductRequest request = JsonFiles.read("/testdata/products/new-product.json", ProductRequest.class);
         Product product = client.createProduct(request).then()
