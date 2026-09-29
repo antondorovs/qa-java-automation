@@ -13,6 +13,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static io.github.antondorovs.qa.api.ApiSpecifications.jsonResponse;
 import static io.restassured.RestAssured.given;
@@ -50,6 +53,19 @@ class ProductsApiTest {
                 .body("id", equalTo(1))
                 .body("title", not(blankOrNullString()))
                 .body("price", notNullValue());
+    }
+
+    @Test
+    void returnsOnlySelectedFieldsForProductList() {
+        List<Map<String, Object>> products = client.listProductFields(2, 0, "title", "price").then()
+                .spec(jsonResponse(200)).extract().jsonPath().getList("products");
+
+        assertEquals(2, products.size());
+        for (Map<String, Object> product : products) {
+            assertEquals(Set.of("id", "title", "price"), product.keySet());
+            assertFalse(((String) product.get("title")).isBlank());
+            assertTrue(product.get("price") instanceof Number);
+        }
     }
 
     @ParameterizedTest(name = "limit={0}, skip={1}")
@@ -128,6 +144,19 @@ class ProductsApiTest {
         );
         for (Product product : response.products()) {
             assertEquals(category, product.category(), "Category for product " + product.id());
+        }
+    }
+
+    @Test
+    void returnsOnlySelectedFieldsForCategoryProducts() {
+        List<Map<String, Object>> products = client.getProductCategoryFields("beauty", "title", "price").then()
+                .spec(jsonResponse(200)).extract().jsonPath().getList("products");
+
+        assertFalse(products.isEmpty());
+        for (Map<String, Object> product : products) {
+            assertEquals(Set.of("id", "title", "price"), product.keySet());
+            assertFalse(((String) product.get("title")).isBlank());
+            assertTrue(product.get("price") instanceof Number);
         }
     }
 
