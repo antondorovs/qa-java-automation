@@ -148,6 +148,19 @@ class ProductsApiTest {
     }
 
     @Test
+    void returnsOnlySelectedFieldsForCategoryProducts() {
+        List<Map<String, Object>> products = client.getProductCategoryFields("beauty", "title", "price").then()
+                .spec(jsonResponse(200)).extract().jsonPath().getList("products");
+
+        assertFalse(products.isEmpty());
+        for (Map<String, Object> product : products) {
+            assertEquals(Set.of("id", "title", "price"), product.keySet());
+            assertFalse(((String) product.get("title")).isBlank());
+            assertTrue(product.get("price") instanceof Number);
+        }
+    }
+
+    @Test
     void returnsEmptyResultsForUnknownSearchTerm() {
         ProductsResponse response = client.searchProducts("qa-no-product-7a6d921e").then()
                 .spec(jsonResponse(200)).extract().as(ProductsResponse.class);

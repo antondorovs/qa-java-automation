@@ -62,6 +62,12 @@ public class ProductsClient {
         return given().spec(ApiSpecifications.request()).get("/products/category/{category}", category);
     }
 
+    public Response getProductCategoryFields(String category, String... fields) {
+        return given().spec(ApiSpecifications.request())
+                .queryParam("select", String.join(",", fields))
+                .get("/products/category/{category}", category);
+    }
+
     public Response getProductsByCategory(String category, int limit, int skip) {
         return given().spec(ApiSpecifications.request())
                 .queryParam("limit", limit)
