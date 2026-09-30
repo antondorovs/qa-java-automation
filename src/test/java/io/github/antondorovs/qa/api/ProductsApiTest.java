@@ -161,6 +161,22 @@ class ProductsApiTest {
     }
 
     @Test
+    void paginatesSelectedFieldsWithinCategory() {
+        List<Map<String, Object>> products = client.getProductCategoryFields("beauty", 2, 1, "title", "price").then()
+                .spec(jsonResponse(200))
+                .body("limit", equalTo(2))
+                .body("skip", equalTo(1))
+                .extract().jsonPath().getList("products");
+
+        assertEquals(2, products.size());
+        for (Map<String, Object> product : products) {
+            assertEquals(Set.of("id", "title", "price"), product.keySet());
+            assertFalse(((String) product.get("title")).isBlank());
+            assertTrue(product.get("price") instanceof Number);
+        }
+    }
+
+    @Test
     void returnsEmptyResultsForUnknownSearchTerm() {
         ProductsResponse response = client.searchProducts("qa-no-product-7a6d921e").then()
                 .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
