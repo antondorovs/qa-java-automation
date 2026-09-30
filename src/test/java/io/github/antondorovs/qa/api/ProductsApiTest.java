@@ -177,6 +177,20 @@ class ProductsApiTest {
     }
 
     @Test
+    void preservesCategoryPageIdentityForSelectedFields() {
+        ProductsResponse fullPage = client.getProductsByCategory("beauty", 2, 1).then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+        List<Map<String, Object>> projectedPage = client.getProductCategoryFields("beauty", 2, 1, "title", "price").then()
+                .spec(jsonResponse(200)).extract().jsonPath().getList("products");
+
+        List<Integer> fullPageIds = fullPage.products().stream().map(Product::id).toList();
+        List<Integer> projectedPageIds = projectedPage.stream()
+                .map(product -> ((Number) product.get("id")).intValue())
+                .toList();
+        assertEquals(fullPageIds, projectedPageIds);
+    }
+
+    @Test
     void returnsEmptyResultsForUnknownSearchTerm() {
         ProductsResponse response = client.searchProducts("qa-no-product-7a6d921e").then()
                 .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
