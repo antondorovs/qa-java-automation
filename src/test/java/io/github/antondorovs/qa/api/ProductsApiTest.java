@@ -191,6 +191,18 @@ class ProductsApiTest {
     }
 
     @Test
+    void returnsMinimalProjectionForCategoryProducts() {
+        List<Map<String, Object>> products = client.getProductCategoryFields("beauty", "title").then()
+                .spec(jsonResponse(200)).extract().jsonPath().getList("products");
+
+        assertFalse(products.isEmpty());
+        for (Map<String, Object> product : products) {
+            assertEquals(Set.of("id", "title"), product.keySet());
+            assertFalse(((String) product.get("title")).isBlank());
+        }
+    }
+
+    @Test
     void returnsEmptyResultsForUnknownSearchTerm() {
         ProductsResponse response = client.searchProducts("qa-no-product-7a6d921e").then()
                 .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
