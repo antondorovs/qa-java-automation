@@ -128,6 +128,20 @@ class ProductsApiTest {
     }
 
     @Test
+    void sortsProductsByTitleInAscendingOrder() {
+        ProductsResponse response = client.listProductsSortedBy(20, "title", "asc").then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+
+        assertEquals(20, response.products().size());
+        for (int index = 1; index < response.products().size(); index++) {
+            String previousTitle = response.products().get(index - 1).title();
+            String currentTitle = response.products().get(index).title();
+            assertTrue(previousTitle.compareToIgnoreCase(currentTitle) <= 0,
+                    "Titles are not sorted at index " + index);
+        }
+    }
+
+    @Test
     void listsCategoriesUsedForProductFiltering() {
         client.listProductCategories().then()
                 .spec(jsonResponse(200))
