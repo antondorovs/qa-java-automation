@@ -98,6 +98,24 @@ class ProductsApiTest {
     }
 
     @Test
+    void sortsPaginatedProductsByPriceInDescendingOrder() {
+        ProductsResponse response = client.listProductsSortedBy(5, 5, "price", "desc").then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+
+        assertAll(
+                () -> assertEquals(5, response.limit()),
+                () -> assertEquals(5, response.skip()),
+                () -> assertEquals(5, response.products().size())
+        );
+        for (int index = 1; index < response.products().size(); index++) {
+            BigDecimal previousPrice = response.products().get(index - 1).price();
+            BigDecimal currentPrice = response.products().get(index).price();
+            assertTrue(previousPrice.compareTo(currentPrice) >= 0,
+                    "Prices are not sorted at index " + index);
+        }
+    }
+
+    @Test
     void listsCategoriesUsedForProductFiltering() {
         client.listProductCategories().then()
                 .spec(jsonResponse(200))
