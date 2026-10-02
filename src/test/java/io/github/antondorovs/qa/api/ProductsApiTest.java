@@ -285,6 +285,20 @@ class ProductsApiTest {
     }
 
     @Test
+    void preservesSearchPageIdentityForSelectedFields() {
+        ProductsResponse fullPage = client.searchProducts("phone", 3, 1).then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+        List<Map<String, Object>> projectedPage = client.searchProductFields("phone", 3, 1, "title", "price").then()
+                .spec(jsonResponse(200)).extract().jsonPath().getList("products");
+
+        List<Integer> fullPageIds = fullPage.products().stream().map(Product::id).toList();
+        List<Integer> projectedPageIds = projectedPage.stream()
+                .map(product -> ((Number) product.get("id")).intValue())
+                .toList();
+        assertEquals(fullPageIds, projectedPageIds);
+    }
+
+    @Test
     void echoesCreatedProductWithoutPersistingIt() {
         ProductRequest request = JsonFiles.read("/testdata/products/new-product.json", ProductRequest.class);
         Product product = client.createProduct(request).then()
