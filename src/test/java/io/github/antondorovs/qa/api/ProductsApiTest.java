@@ -269,6 +269,36 @@ class ProductsApiTest {
     }
 
     @Test
+    void returnsSelectedFieldsForProductSearch() {
+        List<Map<String, Object>> products = client.searchProductFields("phone", 3, 0, "title", "price").then()
+                .spec(jsonResponse(200))
+                .body("limit", equalTo(3))
+                .body("skip", equalTo(0))
+                .extract().jsonPath().getList("products");
+
+        assertEquals(3, products.size());
+        for (Map<String, Object> product : products) {
+            assertEquals(Set.of("id", "title", "price"), product.keySet());
+            assertFalse(((String) product.get("title")).isBlank());
+            assertTrue(product.get("price") instanceof Number);
+        }
+    }
+
+    @Test
+    void preservesSearchPageIdentityForSelectedFields() {
+        ProductsResponse fullPage = client.searchProducts("phone", 3, 1).then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+        List<Map<String, Object>> projectedPage = client.searchProductFields("phone", 3, 1, "title", "price").then()
+                .spec(jsonResponse(200)).extract().jsonPath().getList("products");
+
+        List<Integer> fullPageIds = fullPage.products().stream().map(Product::id).toList();
+        List<Integer> projectedPageIds = projectedPage.stream()
+                .map(product -> ((Number) product.get("id")).intValue())
+                .toList();
+        assertEquals(fullPageIds, projectedPageIds);
+    }
+
+    @Test
     void echoesCreatedProductWithoutPersistingIt() {
         ProductRequest request = JsonFiles.read("/testdata/products/new-product.json", ProductRequest.class);
         Product product = client.createProduct(request).then()
