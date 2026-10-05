@@ -269,6 +269,20 @@ class ProductsApiTest {
     }
 
     @Test
+    void sortsProductSearchResultsByPriceInAscendingOrder() {
+        ProductsResponse response = client.searchProductsSortedBy("phone", 10, "price", "asc").then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+
+        assertEquals(10, response.products().size());
+        for (int index = 1; index < response.products().size(); index++) {
+            BigDecimal previousPrice = response.products().get(index - 1).price();
+            BigDecimal currentPrice = response.products().get(index).price();
+            assertTrue(previousPrice.compareTo(currentPrice) <= 0,
+                    "Search results are not sorted at index " + index);
+        }
+    }
+
+    @Test
     void returnsSelectedFieldsForProductSearch() {
         List<Map<String, Object>> products = client.searchProductFields("phone", 3, 0, "title", "price").then()
                 .spec(jsonResponse(200))
