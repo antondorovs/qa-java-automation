@@ -295,6 +295,20 @@ class ProductsApiTest {
     }
 
     @Test
+    void sortsProductSearchResultsByTitleInDescendingOrder() {
+        ProductsResponse response = client.searchProductsSortedBy("phone", 5, "title", "desc").then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+
+        assertEquals(5, response.products().size());
+        for (int index = 1; index < response.products().size(); index++) {
+            String previousTitle = response.products().get(index - 1).title();
+            String currentTitle = response.products().get(index).title();
+            assertTrue(previousTitle.compareToIgnoreCase(currentTitle) >= 0,
+                    "Search result titles are not sorted at index " + index);
+        }
+    }
+
+    @Test
     void returnsSelectedFieldsForProductSearch() {
         List<Map<String, Object>> products = client.searchProductFields("phone", 3, 0, "title", "price").then()
                 .spec(jsonResponse(200))
