@@ -67,6 +67,25 @@ public class ProductsClient {
                 .get("/products/search");
     }
 
+    public Response searchProductsSortedBy(String query, int limit, String field, String order) {
+        return given().spec(ApiSpecifications.request())
+                .queryParam("q", query)
+                .queryParam("limit", limit)
+                .queryParam("sortBy", field)
+                .queryParam("order", order)
+                .get("/products/search");
+    }
+
+    public Response searchProductsSortedBy(String query, int limit, int skip, String field, String order) {
+        return given().spec(ApiSpecifications.request())
+                .queryParam("q", query)
+                .queryParam("limit", limit)
+                .queryParam("skip", skip)
+                .queryParam("sortBy", field)
+                .queryParam("order", order)
+                .get("/products/search");
+    }
+
     public Response searchProductFields(String query, int limit, int skip, String... fields) {
         return given().spec(ApiSpecifications.request())
                 .queryParam("q", query)

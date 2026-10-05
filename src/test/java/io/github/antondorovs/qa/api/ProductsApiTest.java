@@ -269,6 +269,46 @@ class ProductsApiTest {
     }
 
     @Test
+    void sortsProductSearchResultsByPriceInAscendingOrder() {
+        ProductsResponse response = client.searchProductsSortedBy("phone", 10, "price", "asc").then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+
+        assertEquals(10, response.products().size());
+        for (int index = 1; index < response.products().size(); index++) {
+            BigDecimal previousPrice = response.products().get(index - 1).price();
+            BigDecimal currentPrice = response.products().get(index).price();
+            assertTrue(previousPrice.compareTo(currentPrice) <= 0,
+                    "Search results are not sorted at index " + index);
+        }
+    }
+
+    @Test
+    void preservesSortedSearchPageIdentity() {
+        ProductsResponse fullResult = client.searchProductsSortedBy("phone", 10, "price", "asc").then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+        ProductsResponse pagedResult = client.searchProductsSortedBy("phone", 3, 2, "price", "asc").then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+
+        List<Integer> expectedIds = fullResult.products().subList(2, 5).stream().map(Product::id).toList();
+        List<Integer> actualIds = pagedResult.products().stream().map(Product::id).toList();
+        assertEquals(expectedIds, actualIds);
+    }
+
+    @Test
+    void sortsProductSearchResultsByTitleInDescendingOrder() {
+        ProductsResponse response = client.searchProductsSortedBy("phone", 5, "title", "desc").then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+
+        assertEquals(5, response.products().size());
+        for (int index = 1; index < response.products().size(); index++) {
+            String previousTitle = response.products().get(index - 1).title();
+            String currentTitle = response.products().get(index).title();
+            assertTrue(previousTitle.compareToIgnoreCase(currentTitle) >= 0,
+                    "Search result titles are not sorted at index " + index);
+        }
+    }
+
+    @Test
     void returnsSelectedFieldsForProductSearch() {
         List<Map<String, Object>> products = client.searchProductFields("phone", 3, 0, "title", "price").then()
                 .spec(jsonResponse(200))
