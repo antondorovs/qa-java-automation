@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static io.github.antondorovs.qa.api.ApiSpecifications.jsonResponse;
 import static io.restassured.RestAssured.given;
@@ -160,6 +161,56 @@ class ProductsApiTest {
                 () -> assertEquals("Beauty", beauty.name()),
                 () -> assertEquals("https://dummyjson.com/products/category/beauty", beauty.url())
         );
+    }
+
+    @Test
+    void keepsCategoryListAndCategoryDetailsInSync() {
+        String[] categorySlugs = client.listProductCategories().then()
+                .spec(jsonResponse(200)).extract().as(String[].class);
+        ProductCategory[] categoryDetails = client.listProductCategoryDetails().then()
+                .spec(jsonResponse(200)).extract().as(ProductCategory[].class);
+
+        Set<String> expectedSlugs = Set.copyOf(Arrays.asList(categorySlugs));
+        Set<String> actualSlugs = Arrays.stream(categoryDetails)
+                .map(ProductCategory::slug)
+                .collect(Collectors.toSet());
+        assertAll(
+                () -> assertEquals(categorySlugs.length, expectedSlugs.size()),
+                () -> assertEquals(categoryDetails.length, actualSlugs.size()),
+                () -> assertEquals(expectedSlugs, actualSlugs)
+        );
+    }
+
+    @Test
+    void exposesUniqueCategoryDetailUrls() {
+        ProductCategory[] categoryDetails = client.listProductCategoryDetails().then()
+                .spec(jsonResponse(200)).extract().as(ProductCategory[].class);
+
+        Set<String> categoryUrls = Arrays.stream(categoryDetails)
+                .map(ProductCategory::url)
+                .collect(Collectors.toSet());
+        assertEquals(categoryDetails.length, categoryUrls.size());
+        for (ProductCategory category : categoryDetails) {
+            assertTrue(category.url().endsWith("/" + category.slug()));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"beauty", "furniture", "smartphones"})
+    void returnsProductsFromDocumentedCategoryUrl(String categorySlug) {
+        ProductCategory category = Arrays.stream(client.listProductCategoryDetails().then()
+                        .spec(jsonResponse(200)).extract().as(ProductCategory[].class))
+                .filter(detail -> detail.slug().equals(categorySlug))
+                .findFirst()
+                .orElseThrow();
+
+        ProductsResponse response = client.getProductsByUrl(category.url()).then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+
+        assertFalse(response.products().isEmpty());
+        for (Product product : response.products()) {
+            assertEquals(categorySlug, product.category(), "Category for product " + product.id());
+        }
     }
 
     @ParameterizedTest
