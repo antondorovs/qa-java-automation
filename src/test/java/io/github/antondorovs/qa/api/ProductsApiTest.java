@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static io.github.antondorovs.qa.api.ApiSpecifications.jsonResponse;
 import static io.restassured.RestAssured.given;
@@ -159,6 +160,24 @@ class ProductsApiTest {
         assertAll(
                 () -> assertEquals("Beauty", beauty.name()),
                 () -> assertEquals("https://dummyjson.com/products/category/beauty", beauty.url())
+        );
+    }
+
+    @Test
+    void keepsCategoryListAndCategoryDetailsInSync() {
+        String[] categorySlugs = client.listProductCategories().then()
+                .spec(jsonResponse(200)).extract().as(String[].class);
+        ProductCategory[] categoryDetails = client.listProductCategoryDetails().then()
+                .spec(jsonResponse(200)).extract().as(ProductCategory[].class);
+
+        Set<String> expectedSlugs = Set.copyOf(Arrays.asList(categorySlugs));
+        Set<String> actualSlugs = Arrays.stream(categoryDetails)
+                .map(ProductCategory::slug)
+                .collect(Collectors.toSet());
+        assertAll(
+                () -> assertEquals(categorySlugs.length, expectedSlugs.size()),
+                () -> assertEquals(categoryDetails.length, actualSlugs.size()),
+                () -> assertEquals(expectedSlugs, actualSlugs)
         );
     }
 
