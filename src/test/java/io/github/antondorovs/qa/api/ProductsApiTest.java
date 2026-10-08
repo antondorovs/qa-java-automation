@@ -181,6 +181,20 @@ class ProductsApiTest {
         );
     }
 
+    @Test
+    void exposesUniqueCategoryDetailUrls() {
+        ProductCategory[] categoryDetails = client.listProductCategoryDetails().then()
+                .spec(jsonResponse(200)).extract().as(ProductCategory[].class);
+
+        Set<String> categoryUrls = Arrays.stream(categoryDetails)
+                .map(ProductCategory::url)
+                .collect(Collectors.toSet());
+        assertEquals(categoryDetails.length, categoryUrls.size());
+        for (ProductCategory category : categoryDetails) {
+            assertTrue(category.url().endsWith("/" + category.slug()));
+        }
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"beauty", "furniture", "smartphones"})
     void filtersProductsByCategory(String category) {
