@@ -99,6 +99,10 @@ public class ProductsClient {
         return given().spec(ApiSpecifications.request()).get("/products/category/{category}", category);
     }
 
+    public Response getProductsByUrl(String categoryUrl) {
+        return given().spec(ApiSpecifications.request()).get(categoryUrl);
+    }
+
     public Response getProductCategoryFields(String category, String... fields) {
         return given().spec(ApiSpecifications.request())
                 .queryParam("select", String.join(",", fields))
