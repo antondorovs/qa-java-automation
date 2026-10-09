@@ -307,6 +307,19 @@ class ProductsApiTest {
     }
 
     @Test
+    void reportsPaginationMetadataForEmptySearchResults() {
+        ProductsResponse response = client.searchProducts("qa-no-product-7a6d921e", 3, 2).then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+
+        assertAll(
+                () -> assertEquals(0, response.total()),
+                () -> assertEquals(2, response.skip()),
+                () -> assertEquals(0, response.limit()),
+                () -> assertTrue(response.products().isEmpty())
+        );
+    }
+
+    @Test
     void paginatesProductSearchResults() {
         ProductsResponse response = client.searchProducts("phone", 3, 1).then()
                 .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
