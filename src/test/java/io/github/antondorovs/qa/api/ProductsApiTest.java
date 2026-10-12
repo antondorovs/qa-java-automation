@@ -117,6 +117,25 @@ class ProductsApiTest {
     }
 
     @Test
+    void sortsSelectedProductFieldsByPriceInAscendingOrder() {
+        List<Map<String, Object>> products = client.listSortedProductFields(5, 0, "price", "asc", "title", "price").then()
+                .spec(jsonResponse(200)).extract().jsonPath().getList("products");
+
+        assertEquals(5, products.size());
+        for (int index = 0; index < products.size(); index++) {
+            Map<String, Object> product = products.get(index);
+            assertEquals(Set.of("id", "title", "price"), product.keySet());
+            assertFalse(((String) product.get("title")).isBlank());
+            if (index > 0) {
+                BigDecimal previousPrice = new BigDecimal(products.get(index - 1).get("price").toString());
+                BigDecimal currentPrice = new BigDecimal(product.get("price").toString());
+                assertTrue(previousPrice.compareTo(currentPrice) <= 0,
+                        "Projected prices are not sorted at index " + index);
+            }
+        }
+    }
+
+    @Test
     void preservesSortedPageIdentity() {
         ProductsResponse fullResult = client.listProductsSortedBy(10, "price", "desc").then()
                 .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
