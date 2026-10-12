@@ -117,6 +117,37 @@ class ProductsApiTest {
     }
 
     @Test
+    void sortsSelectedProductFieldsByPriceInAscendingOrder() {
+        List<Map<String, Object>> products = client.listSortedProductFields(5, 0, "price", "asc", "title", "price").then()
+                .spec(jsonResponse(200)).extract().jsonPath().getList("products");
+
+        assertEquals(5, products.size());
+        for (int index = 0; index < products.size(); index++) {
+            Map<String, Object> product = products.get(index);
+            assertEquals(Set.of("id", "title", "price"), product.keySet());
+            assertFalse(((String) product.get("title")).isBlank());
+            if (index > 0) {
+                BigDecimal previousPrice = new BigDecimal(products.get(index - 1).get("price").toString());
+                BigDecimal currentPrice = new BigDecimal(product.get("price").toString());
+                assertTrue(previousPrice.compareTo(currentPrice) <= 0,
+                        "Projected prices are not sorted at index " + index);
+            }
+        }
+    }
+
+    @Test
+    void preservesSortedPageIdentityForSelectedFields() {
+        ProductsResponse fullResult = client.listProductsSortedBy(10, "price", "asc").then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+        List<Map<String, Object>> projectedPage = client.listSortedProductFields(5, 5, "price", "asc", "title", "price").then()
+                .spec(jsonResponse(200)).extract().jsonPath().getList("products");
+
+        List<Integer> expectedIds = fullResult.products().subList(5, 10).stream().map(Product::id).toList();
+        List<Integer> actualIds = projectedPage.stream().map(product -> (Integer) product.get("id")).toList();
+        assertEquals(expectedIds, actualIds);
+    }
+
+    @Test
     void preservesSortedPageIdentity() {
         ProductsResponse fullResult = client.listProductsSortedBy(10, "price", "desc").then()
                 .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
