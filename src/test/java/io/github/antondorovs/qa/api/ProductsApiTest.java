@@ -419,6 +419,25 @@ class ProductsApiTest {
     }
 
     @Test
+    void returnsMinimalProjectionForTitleSortedSearch() {
+        List<Map<String, Object>> products = client.searchSortedProductFields("phone", 5, 0, "title", "desc", "title").then()
+                .spec(jsonResponse(200)).extract().jsonPath().getList("products");
+
+        assertEquals(5, products.size());
+        for (int index = 0; index < products.size(); index++) {
+            Map<String, Object> product = products.get(index);
+            assertEquals(Set.of("id", "title"), product.keySet());
+            assertFalse(((String) product.get("title")).isBlank());
+            if (index > 0) {
+                String previousTitle = (String) products.get(index - 1).get("title");
+                String currentTitle = (String) product.get("title");
+                assertTrue(previousTitle.compareToIgnoreCase(currentTitle) >= 0,
+                        "Projected search titles are not sorted at index " + index);
+            }
+        }
+    }
+
+    @Test
     void returnsSelectedFieldsForProductSearch() {
         List<Map<String, Object>> products = client.searchProductFields("phone", 3, 0, "title", "price").then()
                 .spec(jsonResponse(200))
