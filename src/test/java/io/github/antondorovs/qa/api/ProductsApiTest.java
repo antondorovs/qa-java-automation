@@ -390,6 +390,21 @@ class ProductsApiTest {
     }
 
     @Test
+    void preservesSortedSearchPageIdentityForSelectedFields() {
+        ProductsResponse fullResult = client.searchProductsSortedBy("phone", 10, "price", "asc").then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+        List<Map<String, Object>> projectedPage = client.searchSortedProductFields("phone", 3, 2, "price", "asc", "title", "price").then()
+                .spec(jsonResponse(200)).extract().jsonPath().getList("products");
+
+        List<Integer> expectedIds = fullResult.products().subList(2, 5).stream().map(Product::id).toList();
+        List<Integer> actualIds = projectedPage.stream()
+                .map(product -> ((Number) product.get("id")).intValue())
+                .toList();
+        assertEquals(expectedIds, actualIds);
+        projectedPage.forEach(product -> assertEquals(Set.of("id", "title", "price"), product.keySet()));
+    }
+
+    @Test
     void sortsProductSearchResultsByTitleInDescendingOrder() {
         ProductsResponse response = client.searchProductsSortedBy("phone", 5, "title", "desc").then()
                 .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
