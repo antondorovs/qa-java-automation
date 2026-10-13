@@ -96,6 +96,17 @@ public class ProductsClient {
                 .get("/products/search");
     }
 
+    public Response searchSortedProductFields(String query, int limit, int skip, String field, String order, String... fields) {
+        return given().spec(ApiSpecifications.request())
+                .queryParam("q", query)
+                .queryParam("limit", limit)
+                .queryParam("skip", skip)
+                .queryParam("sortBy", field)
+                .queryParam("order", order)
+                .queryParam("select", String.join(",", fields))
+                .get("/products/search");
+    }
+
     public Response searchProductFields(String query, int limit, int skip, String... fields) {
         return given().spec(ApiSpecifications.request())
                 .queryParam("q", query)

@@ -390,6 +390,21 @@ class ProductsApiTest {
     }
 
     @Test
+    void preservesSortedSearchPageIdentityForSelectedFields() {
+        ProductsResponse fullResult = client.searchProductsSortedBy("phone", 10, "price", "asc").then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+        List<Map<String, Object>> projectedPage = client.searchSortedProductFields("phone", 3, 2, "price", "asc", "title", "price").then()
+                .spec(jsonResponse(200)).extract().jsonPath().getList("products");
+
+        List<Integer> expectedIds = fullResult.products().subList(2, 5).stream().map(Product::id).toList();
+        List<Integer> actualIds = projectedPage.stream()
+                .map(product -> ((Number) product.get("id")).intValue())
+                .toList();
+        assertEquals(expectedIds, actualIds);
+        projectedPage.forEach(product -> assertEquals(Set.of("id", "title", "price"), product.keySet()));
+    }
+
+    @Test
     void sortsProductSearchResultsByTitleInDescendingOrder() {
         ProductsResponse response = client.searchProductsSortedBy("phone", 5, "title", "desc").then()
                 .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
@@ -400,6 +415,25 @@ class ProductsApiTest {
             String currentTitle = response.products().get(index).title();
             assertTrue(previousTitle.compareToIgnoreCase(currentTitle) >= 0,
                     "Search result titles are not sorted at index " + index);
+        }
+    }
+
+    @Test
+    void returnsMinimalProjectionForTitleSortedSearch() {
+        List<Map<String, Object>> products = client.searchSortedProductFields("phone", 5, 0, "title", "desc", "title").then()
+                .spec(jsonResponse(200)).extract().jsonPath().getList("products");
+
+        assertEquals(5, products.size());
+        for (int index = 0; index < products.size(); index++) {
+            Map<String, Object> product = products.get(index);
+            assertEquals(Set.of("id", "title"), product.keySet());
+            assertFalse(((String) product.get("title")).isBlank());
+            if (index > 0) {
+                String previousTitle = (String) products.get(index - 1).get("title");
+                String currentTitle = (String) product.get("title");
+                assertTrue(previousTitle.compareToIgnoreCase(currentTitle) >= 0,
+                        "Projected search titles are not sorted at index " + index);
+            }
         }
     }
 
