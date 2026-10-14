@@ -103,6 +103,29 @@ class ProductsApiTest {
         );
     }
 
+    @ParameterizedTest(name = "remaining products={0}")
+    @ValueSource(ints = {1, 2})
+    void returnsPartialFinalCatalogPages(int remaining) {
+        ProductsResponse firstPage = client.listProducts(1, 0).then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+        assertTrue(firstPage.total() >= remaining);
+        int skip = firstPage.total() - remaining;
+
+        ProductsResponse finalPage = client.listProducts(5, skip).then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+        ProductsResponse lastProductPage = client.listProducts(1, firstPage.total() - 1).then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+
+        assertAll(
+                () -> assertEquals(remaining, finalPage.products().size()),
+                () -> assertEquals(remaining, finalPage.limit()),
+                () -> assertEquals(skip, finalPage.skip()),
+                () -> assertEquals(firstPage.total(), finalPage.total())
+        );
+        assertEquals(1, lastProductPage.products().size());
+        assertEquals(lastProductPage.products().getFirst().id(), finalPage.products().getLast().id());
+    }
+
     @Test
     void sortsProductsByPriceInAscendingOrder() {
         ProductsResponse response = client.listProductsSortedBy(20, "price", "asc").then()
