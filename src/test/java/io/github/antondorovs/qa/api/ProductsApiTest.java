@@ -84,6 +84,27 @@ class ProductsApiTest {
         assertEquals(firstExpected.id(), response.products().getFirst().id());
     }
 
+    @Test
+    void returnsCompleteCatalogWhenLimitIsZero() {
+        ProductsResponse firstPage = client.listProducts(1, 0).then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+        assertTrue(firstPage.total() > 0);
+        assertEquals(1, firstPage.products().size());
+
+        ProductsResponse fullCatalog = client.listProducts(0, 0).then()
+                .spec(jsonResponse(200)).extract().as(ProductsResponse.class);
+        List<Integer> productIds = fullCatalog.products().stream().map(Product::id).toList();
+
+        assertAll(
+                () -> assertEquals(firstPage.total(), fullCatalog.total()),
+                () -> assertEquals(firstPage.total(), fullCatalog.products().size()),
+                () -> assertEquals(firstPage.total(), fullCatalog.limit()),
+                () -> assertEquals(0, fullCatalog.skip()),
+                () -> assertEquals(productIds.size(), Set.copyOf(productIds).size())
+        );
+        assertEquals(firstPage.products().getFirst().id(), fullCatalog.products().getFirst().id());
+    }
+
     @ParameterizedTest(name = "offset beyond catalog={0}")
     @ValueSource(ints = {0, 1, 10})
     void returnsEmptyPagesAtAndBeyondCatalogEnd(int offset) {
