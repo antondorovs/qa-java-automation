@@ -550,6 +550,23 @@ class ProductsApiTest {
                 .body("message", equalTo("Product with id '" + id + "' not found"));
     }
 
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1, 99999999})
+    void rejectsUpdatingMissingProduct(int id) {
+        ProductRequest request = JsonFiles.read("/testdata/products/new-product.json", ProductRequest.class);
+
+        client.updateProduct(id, request).then().spec(jsonResponse(404))
+                .body("message", equalTo("Product with id '" + id + "' not found"));
+        client.getProduct(id).then().spec(jsonResponse(404));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1, 99999999})
+    void rejectsDeletingMissingProduct(int id) {
+        client.deleteProduct(id).then().spec(jsonResponse(404))
+                .body("message", equalTo("Product with id '" + id + "' not found"));
+    }
+
     @Test
     void rejectsUnknownEndpoint() {
         given().spec(ApiSpecifications.request()).get("/qa-unknown-endpoint")
