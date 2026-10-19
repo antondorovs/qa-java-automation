@@ -48,6 +48,14 @@ tasks.register('cleanAllureResults', Delete) {
     delete layout.buildDirectory.dir('allure-results')
 }
 
+tasks.register('configTest', Test) {
+    description = 'Runs configuration validation without external services.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform { includeTags 'config' }
+}
+
 tasks.register('apiTest', Test) {
     description = 'Runs the public product API tests.'
     group = 'verification'

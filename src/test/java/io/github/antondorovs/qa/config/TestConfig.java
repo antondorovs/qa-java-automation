@@ -35,7 +35,12 @@ public final class TestConfig {
     }
 
     public static long uiTimeout() {
-        long timeout = Long.parseLong(get("ui.timeout", "UI_TIMEOUT"));
+        long timeout;
+        try {
+            timeout = Long.parseLong(get("ui.timeout", "UI_TIMEOUT"));
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException("UI_TIMEOUT must be a positive whole number (milliseconds)", exception);
+        }
         if (timeout <= 0) {
             throw new IllegalArgumentException("UI_TIMEOUT must be positive (milliseconds)");
         }
