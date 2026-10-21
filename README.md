@@ -1,12 +1,12 @@
 # QA Java Lab
 
-[![GitHub Actions](https://github.com/antondorovs/qa-java-lab/actions/workflows/tests.yml/badge.svg)](https://github.com/antondorovs/qa-java-lab/actions/workflows/tests.yml)
-[![GitLab CI](https://gitlab.com/antondorovs/qa-java-lab/badges/main/pipeline.svg)](https://gitlab.com/antondorovs/qa-java-lab/-/pipelines)
+[![GitHub Actions](https://github.com/antondorovs/qa-java-automation/actions/workflows/tests.yml/badge.svg)](https://github.com/antondorovs/qa-java-automation/actions/workflows/tests.yml)
+[![GitLab CI](https://gitlab.com/antondorovs/qa-java-automation/badges/main/pipeline.svg)](https://gitlab.com/antondorovs/qa-java-automation/-/pipelines)
 
 Java tests for the [DummyJSON product API](https://dummyjson.com/docs/products),
 the [SauceDemo storefront](https://www.saucedemo.com/), and an isolated PostgreSQL
-database. Source code is maintained on [GitHub](https://github.com/antondorovs/qa-java-lab)
-and [GitLab](https://gitlab.com/antondorovs/qa-java-lab).
+database. Source code is maintained on [GitHub](https://github.com/antondorovs/qa-java-automation)
+and [GitLab](https://gitlab.com/antondorovs/qa-java-automation).
 
 ## Test coverage
 
@@ -64,8 +64,8 @@ local UI tests also need Chrome. DB tests need a running Docker Desktop (Linux
 containers) or Docker Engine. No local PostgreSQL installation is required.
 
 ```bash
-git clone https://github.com/antondorovs/qa-java-lab.git
-cd qa-java-lab
+git clone https://github.com/antondorovs/qa-java-automation.git
+cd qa-java-automation
 ./gradlew testClasses
 ```
 
@@ -152,7 +152,7 @@ runs. Test failures fail the job; assertion failures are not automatically retri
 After cloning from GitHub, add the second remote once:
 
 ```bash
-git remote add gitlab https://gitlab.com/antondorovs/qa-java-lab.git
+git remote add gitlab https://gitlab.com/antondorovs/qa-java-automation.git
 ```
 
 After a reviewed commit, publish the same history to both remotes:
