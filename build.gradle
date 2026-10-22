@@ -44,6 +44,10 @@ allure {
     }
 }
 
+tasks.named('allureReport') {
+    clean.set(true)
+}
+
 tasks.register('cleanAllureResults', Delete) {
     delete layout.buildDirectory.dir('allure-results')
 }
