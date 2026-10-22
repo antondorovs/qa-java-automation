@@ -538,9 +538,18 @@ class ProductsApiTest {
 
     @Test
     void marksDeletedProductWithoutRemovingIt() {
-        client.deleteProduct(1).then().spec(jsonResponse(200))
-                .body("id", equalTo(1)).body("isDeleted", equalTo(true));
-        client.getProduct(1).then().spec(jsonResponse(200)).body("id", equalTo(1));
+        Product original = client.getProduct(1).then()
+                .spec(jsonResponse(200)).extract().as(Product.class);
+
+        Product deleted = client.deleteProduct(1).then().spec(jsonResponse(200))
+                .body("isDeleted", equalTo(true)).extract().as(Product.class);
+        Product stored = client.getProduct(1).then()
+                .spec(jsonResponse(200)).extract().as(Product.class);
+
+        assertAll(
+                () -> assertEquals(original, deleted, "Delete response must preserve the original product fields"),
+                () -> assertEquals(original, stored, "Simulated deletion must leave stored product data unchanged")
+        );
     }
 
     @ParameterizedTest
