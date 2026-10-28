@@ -31,6 +31,17 @@ class JsonFilesTest {
     }
 
     @Test
+    void rejectsDuplicateProductFields() {
+        String resource = "/testdata/invalid/duplicate-fields.json";
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> JsonFiles.read(resource, ProductRequest.class));
+
+        assertTrue(exception.getMessage().contains(resource));
+        assertNotNull(exception.getCause());
+    }
+
+    @Test
     void identifiesMissingFixture() {
         String resource = "/testdata/missing.json";
 
