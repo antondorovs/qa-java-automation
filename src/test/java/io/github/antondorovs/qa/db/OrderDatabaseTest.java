@@ -17,6 +17,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -127,6 +128,32 @@ class OrderDatabaseTest {
         SQLException error = assertThrows(SQLException.class,
                 () -> fixture.createOrder(-1, data.total(), "NEW"));
         assertEquals("23503", error.getSQLState());
+    }
+
+    @Test
+    void preservesOrderWhenCustomerDeletionIsRejected() throws SQLException {
+        long orderId = fixture.createOrder(customerId, data.total(), "NEW");
+        Savepoint beforeDelete = connection.setSavepoint();
+
+        SQLException error = assertThrows(SQLException.class, () -> {
+            try (PreparedStatement delete = connection.prepareStatement("DELETE FROM customers WHERE id = ?")) {
+                delete.setLong(1, customerId);
+                delete.executeUpdate();
+            }
+        });
+        assertEquals("23503", error.getSQLState());
+        connection.rollback(beforeDelete);
+
+        try (PreparedStatement query = connection.prepareStatement(
+                "SELECT o.id FROM orders o JOIN customers c ON c.id = o.customer_id WHERE o.id = ? AND c.id = ?")) {
+            query.setLong(1, orderId);
+            query.setLong(2, customerId);
+            try (ResultSet result = query.executeQuery()) {
+                assertTrue(result.next(), "Rejected customer deletion must preserve the order and its customer");
+                assertEquals(orderId, result.getLong("id"));
+                assertFalse(result.next());
+            }
+        }
     }
 
     @ParameterizedTest
