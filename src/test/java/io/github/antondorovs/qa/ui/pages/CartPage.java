@@ -28,6 +28,15 @@ public class CartPage {
         items.findBy(text(productName)).$("button").click();
     }
 
+    public void shouldHaveItemCount(int count) {
+        items.shouldHave(size(count));
+        if (count == 0) {
+            $("[data-test='shopping-cart-badge']").shouldNotBe(visible);
+        } else {
+            $("[data-test='shopping-cart-badge']").shouldHave(exactText(String.valueOf(count)));
+        }
+    }
+
     public void shouldBeEmpty() {
         items.shouldHave(size(0));
         $("[data-test='shopping-cart-badge']").shouldNotBe(visible);
