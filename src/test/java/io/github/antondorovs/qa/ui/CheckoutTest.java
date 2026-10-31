@@ -1,5 +1,6 @@
 package io.github.antondorovs.qa.ui;
 
+import io.github.antondorovs.qa.ui.pages.CartPage;
 import io.github.antondorovs.qa.ui.pages.CheckoutPage;
 import io.github.antondorovs.qa.ui.pages.InventoryPage;
 import io.github.antondorovs.qa.ui.pages.LoginPage;
@@ -17,6 +18,20 @@ class CheckoutTest extends BaseUiTest {
         checkout.finishOrder();
 
         checkout.shouldShowConfirmation();
+    }
+
+    @Test
+    void cancellationPreservesCartProduct() {
+        CheckoutPage checkout = openCheckout();
+        checkout.submitCustomer("Alex", "Morgan", "10001");
+        checkout.shouldShowOrder("Sauce Labs Backpack", "29.99", "2.40", "32.39");
+
+        InventoryPage inventory = checkout.cancelCheckout();
+
+        inventory.shouldHaveCartCount(1);
+        CartPage cart = inventory.openCart();
+        cart.shouldHaveItemCount(1);
+        cart.shouldContain("Sauce Labs Backpack", "$29.99");
     }
 
     @ParameterizedTest(name = "required field: {3}")

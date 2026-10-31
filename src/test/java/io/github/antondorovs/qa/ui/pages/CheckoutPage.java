@@ -33,6 +33,13 @@ public class CheckoutPage {
         $("[data-test='finish']").click();
     }
 
+    public InventoryPage cancelCheckout() {
+        $("[data-test='cancel']").click();
+        InventoryPage inventory = new InventoryPage();
+        inventory.shouldBeOpen();
+        return inventory;
+    }
+
     public void shouldShowConfirmation() {
         $("[data-test='complete-header']").shouldHave(exactText("Thank you for your order!"));
         $("[data-test='shopping-cart-badge']").shouldNotBe(visible);
