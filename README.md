@@ -17,10 +17,12 @@ and [GitLab](https://gitlab.com/antondorovs/qa-java-automation).
   checkout totals and required customer fields. Each test starts a fresh browser.
 - **Database:** insert/select with a join, update, delete, unique emails, foreign
   keys, positive totals and allowed statuses. Each test rolls back its transaction.
+- **Configuration:** valid timeout values and clear errors for malformed or
+  non-positive values, without external services.
 
-These are three independent suites. PostgreSQL is not the backend of either
-public service. DummyJSON does not persist writes; the API tests also check that
-stored data stays unchanged. Public API/UI availability can affect test results.
+The API, UI and database suites are independent. PostgreSQL is not the backend of
+either public service. DummyJSON does not persist writes; the API tests also check
+that stored data stays unchanged. Public API/UI availability can affect test results.
 
 ## Technology Stack
 
@@ -74,6 +76,7 @@ The Wrapper downloads Gradle and the dependencies. On Windows PowerShell, replac
 
 | Run | Command |
 | --- | --- |
+| Configuration tests, offline | `./gradlew configTest` |
 | API tests | `./gradlew apiTest` |
 | UI tests, headless Chrome | `./gradlew uiTest` |
 | DB tests | `./gradlew dbTest` |
@@ -128,7 +131,7 @@ tests manage their own container independently of Compose.
 These commands build/open the results of the last test invocation without running
 tests again. Allure results are cleared once at the start of each invocation that
 runs tests. To collect all layers, use `./gradlew test` or
-`./gradlew apiTest uiTest dbTest` in one invocation.
+`./gradlew configTest apiTest uiTest dbTest` in one invocation.
 
 Allure includes HTTP requests/responses and Selenide steps, with screenshots and
 page source for failed Selenide checks. Raw results are in `build/allure-results/`;
@@ -137,8 +140,9 @@ are in `build/reports/tests/`. All generated files stay outside Git.
 
 ## CI
 
-GitHub Actions runs separate API, UI and DB jobs on pushes to `main`, pull requests
-and manual runs. Each uses Java 21 and the same Wrapper commands as local runs.
+GitHub Actions runs separate configuration, API, UI and DB jobs on pushes to
+`main`, pull requests and manual runs. Each uses Java 21 and the same Wrapper
+commands as local runs.
 UI uses headless Chrome; Testcontainers uses the runner's Docker engine.
 
 GitLab CI runs the same suites on `main`, merge requests and manual pipelines.

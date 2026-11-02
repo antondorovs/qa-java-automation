@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [apiTest, uiTest, dbTest]
+        suite: [configTest, apiTest, uiTest, dbTest]
     env:
       HEADLESS: 'true'
     steps:

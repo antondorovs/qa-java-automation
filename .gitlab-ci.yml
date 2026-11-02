@@ -43,6 +43,11 @@ variables:
     reports:
       junit: build/test-results/*/TEST-*.xml
 
+config-tests:
+  extends: .gradle-test
+  variables:
+    TEST_SUITE: configTest
+
 api-tests:
   extends: .gradle-test
   variables:
