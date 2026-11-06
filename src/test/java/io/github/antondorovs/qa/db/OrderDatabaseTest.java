@@ -117,6 +117,36 @@ class OrderDatabaseTest {
     }
 
     @Test
+    void preservesOrderWhenStatusUpdateIsRejected() throws SQLException {
+        long orderId = fixture.createOrder(customerId, data.total(), "PAID");
+        Savepoint beforeUpdate = connection.setSavepoint();
+
+        SQLException error = assertThrows(SQLException.class, () -> {
+            try (PreparedStatement update = connection.prepareStatement(
+                    "UPDATE orders SET status = ?, total = ? WHERE id = ?")) {
+                update.setString(1, "UNKNOWN");
+                update.setBigDecimal(2, data.total().add(new BigDecimal("10.00")));
+                update.setLong(3, orderId);
+                update.executeUpdate();
+            }
+        });
+        assertEquals("23514", error.getSQLState());
+        connection.rollback(beforeUpdate);
+
+        try (PreparedStatement query = connection.prepareStatement(
+                "SELECT customer_id, status, total FROM orders WHERE id = ?")) {
+            query.setLong(1, orderId);
+            try (ResultSet result = query.executeQuery()) {
+                assertTrue(result.next(), "Rejected update must preserve the order");
+                assertEquals(customerId, result.getLong("customer_id"));
+                assertEquals("PAID", result.getString("status"));
+                assertEquals(data.total(), result.getBigDecimal("total"));
+                assertFalse(result.next());
+            }
+        }
+    }
+
+    @Test
     void rejectsDuplicateCustomerEmail() {
         SQLException error = assertThrows(SQLException.class,
                 () -> fixture.createCustomer("Another Customer", data.customerEmail()));
