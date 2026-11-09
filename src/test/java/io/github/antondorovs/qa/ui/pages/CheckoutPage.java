@@ -44,4 +44,11 @@ public class CheckoutPage {
         $("[data-test='complete-header']").shouldHave(exactText("Thank you for your order!"));
         $("[data-test='shopping-cart-badge']").shouldNotBe(visible);
     }
+
+    public InventoryPage returnToCatalog() {
+        $("[data-test='back-to-products']").click();
+        InventoryPage inventory = new InventoryPage();
+        inventory.shouldBeOpen();
+        return inventory;
+    }
 }

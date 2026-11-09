@@ -10,7 +10,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 class CheckoutTest extends BaseUiTest {
     @Test
-    void completesOrderWithExpectedTotal() {
+    void completesOrderWithExpectedTotalAndClearsCart() {
         CheckoutPage checkout = openCheckout();
         checkout.submitCustomer("Alex", "Morgan", "10001");
         checkout.shouldShowOrder("Sauce Labs Backpack", "29.99", "2.40", "32.39");
@@ -18,6 +18,8 @@ class CheckoutTest extends BaseUiTest {
         checkout.finishOrder();
 
         checkout.shouldShowConfirmation();
+
+        checkout.returnToCatalog().openCart().shouldBeEmpty();
     }
 
     @Test
