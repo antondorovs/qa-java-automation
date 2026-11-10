@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -17,19 +18,44 @@ import static org.junit.jupiter.api.parallel.Resources.SYSTEM_PROPERTIES;
 @ResourceLock(SYSTEM_PROPERTIES)
 class TestConfigTest {
     private String originalTimeout;
+    private String originalHeadless;
 
     @BeforeEach
-    void rememberTimeoutOverride() {
+    void rememberOverrides() {
         originalTimeout = System.getProperty("ui.timeout");
+        originalHeadless = System.getProperty("headless");
     }
 
     @AfterEach
-    void restoreTimeoutOverride() {
-        if (originalTimeout == null) {
-            System.clearProperty("ui.timeout");
+    void restoreOverrides() {
+        restoreProperty("ui.timeout", originalTimeout);
+        restoreProperty("headless", originalHeadless);
+    }
+
+    private void restoreProperty(String key, String value) {
+        if (value == null) {
+            System.clearProperty(key);
         } else {
-            System.setProperty("ui.timeout", originalTimeout);
+            System.setProperty(key, value);
         }
+    }
+
+    @ParameterizedTest
+    @CsvSource({"' TrUe ', true", "' FaLsE ', false"})
+    void acceptsHeadlessOverridesRegardlessOfCaseAndWhitespace(String value, boolean expected) {
+        System.setProperty("headless", value);
+
+        assertEquals(expected, TestConfig.headless());
+    }
+
+    @ParameterizedTest
+    @EmptySource
+    @ValueSource(strings = {"   ", "yes", "0"})
+    void rejectsMalformedHeadlessOverrides(String value) {
+        System.setProperty("headless", value);
+
+        IllegalArgumentException exception = assertThrowsExactly(IllegalArgumentException.class, TestConfig::headless);
+        assertEquals("HEADLESS must be true or false", exception.getMessage());
     }
 
     @ParameterizedTest
