@@ -20,7 +20,11 @@ public final class JsonFiles {
             if (stream == null) {
                 throw new IllegalArgumentException("Test data was not found: " + resource);
             }
-            return MAPPER.readValue(stream, type);
+            T value = MAPPER.readValue(stream, type);
+            if (value == null) {
+                throw new IllegalStateException("Cannot read test data: " + resource + " contains JSON null");
+            }
+            return value;
         } catch (IOException exception) {
             throw new IllegalStateException("Cannot read test data: " + resource, exception);
         }

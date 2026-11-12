@@ -42,6 +42,16 @@ class JsonFilesTest {
     }
 
     @Test
+    void rejectsNullFixtureWithResourceName() {
+        String resource = "/testdata/invalid/null-value.json";
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> JsonFiles.read(resource, ProductRequest.class));
+        assertTrue(exception.getMessage().contains(resource));
+        assertTrue(exception.getMessage().contains("JSON null"));
+    }
+
+    @Test
     void identifiesMissingFixture() {
         String resource = "/testdata/missing.json";
 
