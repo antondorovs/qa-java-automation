@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.codeborne.selenide.Selenide.refresh;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CartTest extends BaseUiTest {
@@ -45,6 +46,22 @@ class CartTest extends BaseUiTest {
         cart.shouldContain("Sauce Labs Bike Light", "$9.99");
         cart.removeProduct("Sauce Labs Bike Light");
         cart.shouldBeEmpty();
+    }
+
+    @Test
+    void preservesCartContentsAfterRefresh() {
+        InventoryPage inventory = new LoginPage().openPage().loginAsStandardUser();
+        inventory.addToCart("Sauce Labs Backpack");
+        inventory.addToCart("Sauce Labs Bike Light");
+        CartPage cart = inventory.openCart();
+        cart.shouldHaveItemCount(2);
+
+        refresh();
+
+        cart.shouldBeOpen();
+        cart.shouldHaveItemCount(2);
+        cart.shouldContain("Sauce Labs Backpack", "$29.99");
+        cart.shouldContain("Sauce Labs Bike Light", "$9.99");
     }
 
     @ParameterizedTest(name = "price sort {0}")
