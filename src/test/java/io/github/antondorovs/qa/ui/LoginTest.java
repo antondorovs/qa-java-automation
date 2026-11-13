@@ -21,4 +21,15 @@ class LoginTest extends BaseUiTest {
         login.loginAs(username, password);
         login.shouldShowError(message);
     }
+
+    @ParameterizedTest(name = "{2}")
+    @CsvSource({
+            "'', secret_sauce, Epic sadface: Username is required",
+            "standard_user, '', Epic sadface: Password is required"
+    })
+    void requiresBothLoginFields(String username, String password, String message) {
+        LoginPage login = new LoginPage().openPage();
+        login.loginAs(username, password);
+        login.shouldShowError(message);
+    }
 }
