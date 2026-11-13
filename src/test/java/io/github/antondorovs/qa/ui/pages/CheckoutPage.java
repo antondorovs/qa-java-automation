@@ -33,6 +33,13 @@ public class CheckoutPage {
         $("[data-test='finish']").click();
     }
 
+    public CartPage cancelCustomerDetails() {
+        $("[data-test='cancel']").click();
+        CartPage cart = new CartPage();
+        cart.shouldBeOpen();
+        return cart;
+    }
+
     public InventoryPage cancelCheckout() {
         $("[data-test='cancel']").click();
         InventoryPage inventory = new InventoryPage();

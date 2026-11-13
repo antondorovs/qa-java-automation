@@ -36,6 +36,16 @@ class CheckoutTest extends BaseUiTest {
         cart.shouldContain("Sauce Labs Backpack", "$29.99");
     }
 
+    @Test
+    void cancellingCustomerDetailsReturnsToPopulatedCart() {
+        CheckoutPage checkout = openCheckout();
+
+        CartPage cart = checkout.cancelCustomerDetails();
+
+        cart.shouldHaveItemCount(1);
+        cart.shouldContain("Sauce Labs Backpack", "$29.99");
+    }
+
     @ParameterizedTest(name = "required field: {3}")
     @CsvSource({
             "'', Morgan, 10001, Error: First Name is required",
