@@ -78,4 +78,17 @@ class CartTest extends BaseUiTest {
 
         assertEquals(expected, inventory.productPrices());
     }
+
+    @Test
+    void sortsProductsByNameInBothDirections() {
+        InventoryPage inventory = new LoginPage().openPage().loginAsStandardUser();
+        List<String> ascending = inventory.productNames().stream().sorted().toList();
+        List<String> descending = ascending.reversed();
+
+        inventory.sortBy("za");
+        assertEquals(descending, inventory.productNames());
+
+        inventory.sortBy("az");
+        assertEquals(ascending, inventory.productNames());
+    }
 }

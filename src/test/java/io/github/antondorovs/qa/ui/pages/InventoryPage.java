@@ -42,6 +42,10 @@ public class InventoryPage {
         $("[data-test='product-sort-container']").selectOptionByValue(value);
     }
 
+    public List<String> productNames() {
+        return $$("[data-test='inventory-item-name']").shouldHave(sizeGreaterThan(1)).texts();
+    }
+
     public List<BigDecimal> productPrices() {
         prices.shouldHave(sizeGreaterThan(1));
         List<BigDecimal> values = new ArrayList<>();
