@@ -48,4 +48,11 @@ public class CartPage {
         checkout.shouldShowInformationForm();
         return checkout;
     }
+
+    public InventoryPage continueShopping() {
+        $("[data-test='continue-shopping']").click();
+        InventoryPage inventory = new InventoryPage();
+        inventory.shouldBeOpen();
+        return inventory;
+    }
 }

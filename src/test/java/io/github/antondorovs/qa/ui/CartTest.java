@@ -49,6 +49,23 @@ class CartTest extends BaseUiTest {
     }
 
     @Test
+    void keepsFirstProductWhenShoppingContinuesFromCart() {
+        InventoryPage inventory = new LoginPage().openPage().loginAsStandardUser();
+        inventory.addToCart("Sauce Labs Backpack");
+        CartPage cart = inventory.openCart();
+        cart.shouldHaveItemCount(1);
+
+        InventoryPage catalog = cart.continueShopping();
+        catalog.shouldHaveCartCount(1);
+        catalog.addToCart("Sauce Labs Bike Light");
+
+        CartPage updatedCart = catalog.openCart();
+        updatedCart.shouldHaveItemCount(2);
+        updatedCart.shouldContain("Sauce Labs Backpack", "$29.99");
+        updatedCart.shouldContain("Sauce Labs Bike Light", "$9.99");
+    }
+
+    @Test
     void preservesCartContentsAfterRefresh() {
         InventoryPage inventory = new LoginPage().openPage().loginAsStandardUser();
         inventory.addToCart("Sauce Labs Backpack");
