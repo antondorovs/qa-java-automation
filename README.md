@@ -76,7 +76,7 @@ The Wrapper downloads Gradle and the dependencies. On Windows PowerShell, replac
 
 | Run | Command |
 | --- | --- |
-| Configuration tests, offline | `./gradlew configTest` |
+| Configuration and JSON fixture checks, offline | `./gradlew configTest` |
 | API tests | `./gradlew apiTest` |
 | UI tests, headless Chrome | `./gradlew uiTest` |
 | DB tests | `./gradlew dbTest` |

@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Tag("api")
+@Tag("config")
 class JsonFilesTest {
     @Test
     void readsProductFixture() {

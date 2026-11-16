@@ -53,7 +53,7 @@ tasks.register('cleanAllureResults', Delete) {
 }
 
 tasks.register('configTest', Test) {
-    description = 'Runs configuration validation without external services.'
+    description = 'Runs configuration and JSON fixture validation without external services.'
     group = 'verification'
     testClassesDirs = sourceSets.test.output.classesDirs
     classpath = sourceSets.test.runtimeClasspath
