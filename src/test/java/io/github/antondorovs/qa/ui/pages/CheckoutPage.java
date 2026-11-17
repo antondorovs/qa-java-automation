@@ -1,8 +1,10 @@
 package io.github.antondorovs.qa.ui.pages;
 
+import static com.codeborne.selenide.CollectionCondition.exactTexts;
 import static com.codeborne.selenide.Condition.exactText;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.$$;
 
 public class CheckoutPage {
     public void shouldShowInformationForm() {
@@ -21,9 +23,9 @@ public class CheckoutPage {
         shouldShowInformationForm();
     }
 
-    public void shouldShowOrder(String productName, String subtotal, String tax, String total) {
+    public void shouldShowOrder(String subtotal, String tax, String total, String... productNames) {
         $("[data-test='title']").shouldHave(exactText("Checkout: Overview"));
-        $("[data-test='inventory-item-name']").shouldHave(exactText(productName));
+        $$("[data-test='inventory-item-name']").shouldHave(exactTexts(productNames));
         $("[data-test='subtotal-label']").shouldHave(exactText("Item total: $" + subtotal));
         $("[data-test='tax-label']").shouldHave(exactText("Tax: $" + tax));
         $("[data-test='total-label']").shouldHave(exactText("Total: $" + total));

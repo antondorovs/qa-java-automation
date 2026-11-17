@@ -13,7 +13,7 @@ class CheckoutTest extends BaseUiTest {
     void completesOrderWithExpectedTotalAndClearsCart() {
         CheckoutPage checkout = openCheckout();
         checkout.submitCustomer("Alex", "Morgan", "10001");
-        checkout.shouldShowOrder("Sauce Labs Backpack", "29.99", "2.40", "32.39");
+        checkout.shouldShowOrder("29.99", "2.40", "32.39", "Sauce Labs Backpack");
 
         checkout.finishOrder();
 
@@ -23,10 +23,22 @@ class CheckoutTest extends BaseUiTest {
     }
 
     @Test
+    void showsExpectedTotalsForTwoProducts() {
+        InventoryPage inventory = new LoginPage().openPage().loginAsStandardUser();
+        inventory.addToCart("Sauce Labs Backpack");
+        inventory.addToCart("Sauce Labs Bike Light");
+        CheckoutPage checkout = inventory.openCart().checkout();
+
+        checkout.submitCustomer("Alex", "Morgan", "10001");
+
+        checkout.shouldShowOrder("39.98", "3.20", "43.18", "Sauce Labs Backpack", "Sauce Labs Bike Light");
+    }
+
+    @Test
     void cancellationPreservesCartProduct() {
         CheckoutPage checkout = openCheckout();
         checkout.submitCustomer("Alex", "Morgan", "10001");
-        checkout.shouldShowOrder("Sauce Labs Backpack", "29.99", "2.40", "32.39");
+        checkout.shouldShowOrder("29.99", "2.40", "32.39", "Sauce Labs Backpack");
 
         InventoryPage inventory = checkout.cancelCheckout();
 
