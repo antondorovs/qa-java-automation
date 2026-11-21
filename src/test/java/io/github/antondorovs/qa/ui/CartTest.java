@@ -81,6 +81,33 @@ class CartTest extends BaseUiTest {
         cart.shouldContain("Sauce Labs Bike Light", "$9.99");
     }
 
+    @Test
+    void preservesRemovalAfterRefreshAndAllowsAddingProductAgain() {
+        InventoryPage inventory = new LoginPage().openPage().loginAsStandardUser();
+        inventory.addToCart("Sauce Labs Backpack");
+        inventory.addToCart("Sauce Labs Bike Light");
+        CartPage cart = inventory.openCart();
+        cart.shouldHaveItemCount(2);
+
+        cart.removeProduct("Sauce Labs Backpack");
+        cart.shouldHaveItemCount(1);
+
+        refresh();
+
+        cart.shouldBeOpen();
+        cart.shouldHaveItemCount(1);
+        cart.shouldContain("Sauce Labs Bike Light", "$9.99");
+
+        InventoryPage catalog = cart.continueShopping();
+        catalog.shouldHaveCartCount(1);
+        catalog.addToCart("Sauce Labs Backpack");
+
+        CartPage updatedCart = catalog.openCart();
+        updatedCart.shouldHaveItemCount(2);
+        updatedCart.shouldContain("Sauce Labs Backpack", "$29.99");
+        updatedCart.shouldContain("Sauce Labs Bike Light", "$9.99");
+    }
+
     @ParameterizedTest(name = "price sort {0}")
     @CsvSource({"lohi, false", "hilo, true"})
     void sortsProductsByPrice(String option, boolean descending) {
