@@ -35,6 +35,26 @@ class CheckoutTest extends BaseUiTest {
     }
 
     @Test
+    void recalculatesTotalsAfterCancellingAndRemovingProduct() {
+        InventoryPage inventory = new LoginPage().openPage().loginAsStandardUser();
+        inventory.addToCart("Sauce Labs Backpack");
+        inventory.addToCart("Sauce Labs Bike Light");
+        CheckoutPage checkout = inventory.openCart().checkout();
+        checkout.submitCustomer("Alex", "Morgan", "10001");
+        checkout.shouldShowOrder("39.98", "3.20", "43.18", "Sauce Labs Backpack", "Sauce Labs Bike Light");
+
+        CartPage cart = checkout.cancelCheckout().openCart();
+        cart.removeProduct("Sauce Labs Backpack");
+        cart.shouldHaveItemCount(1);
+        cart.shouldContain("Sauce Labs Bike Light", "$9.99");
+
+        CheckoutPage updatedCheckout = cart.checkout();
+        updatedCheckout.submitCustomer("Alex", "Morgan", "10001");
+
+        updatedCheckout.shouldShowOrder("9.99", "0.80", "10.79", "Sauce Labs Bike Light");
+    }
+
+    @Test
     void cancellationPreservesCartProduct() {
         CheckoutPage checkout = openCheckout();
         checkout.submitCustomer("Alex", "Morgan", "10001");
